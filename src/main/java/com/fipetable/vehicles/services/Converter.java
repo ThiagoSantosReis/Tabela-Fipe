@@ -2,6 +2,9 @@ package com.fipetable.vehicles.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
+
+import java.util.List;
 
 public class Converter implements IConverter{
     private ObjectMapper mapper = new ObjectMapper();
@@ -16,7 +19,13 @@ public class Converter implements IConverter{
     }
 
     @Override
-    public <T> T getList(String json, Class<T> cls) {
-        return null;
+    public <T> List<T> getList(String json, Class<T> cls) {
+        CollectionType list = mapper.getTypeFactory()
+                .constructCollectionType(List.class, cls);
+        try {
+            return mapper.readValue(json, list);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

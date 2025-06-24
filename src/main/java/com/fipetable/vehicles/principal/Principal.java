@@ -1,14 +1,22 @@
 package com.fipetable.vehicles.principal;
 
+import com.fipetable.vehicles.models.Data;
+import com.fipetable.vehicles.services.ApiService;
+import com.fipetable.vehicles.services.Converter;
+
 import java.util.Scanner;
 
 public class Principal {
     private Scanner sc = new Scanner(System.in);
+    ApiService apiService = new ApiService();
+    Converter converter = new Converter();
     private final String BASE_URL = "https://parallelum.com.br/fipe/api/v1/";
     private String ADRESS = "";
     public void showMenu(){
         ADRESS = BASE_URL+selectVehicle();
-
+        String jsonData = apiService.getData(ADRESS);
+        var data = converter.getList(jsonData, Data.class);
+        System.out.println(data);
     }
 
     private String selectVehicle(){
