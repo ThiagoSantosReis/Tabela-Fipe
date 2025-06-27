@@ -1,22 +1,25 @@
 package com.fipetable.vehicles.principal;
 
 import com.fipetable.vehicles.models.Data;
-import com.fipetable.vehicles.models.VehicleModelData;
+import com.fipetable.vehicles.models.BrandData;
+import com.fipetable.vehicles.models.Vehicle;
+import com.fipetable.vehicles.models.VehicleData;
 import com.fipetable.vehicles.services.ApiService;
 import com.fipetable.vehicles.services.Converter;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class Principal {
     private Scanner sc = new Scanner(System.in);
     ApiService apiService = new ApiService();
     Converter converter = new Converter();
+    List<Vehicle> vehicles = new ArrayList<>();
     private final String BASE_URL = "https://parallelum.com.br/fipe/api/v1/";
     private String ADRESS = "";
+
     public void showMenu(){
         //ADRESS = BASE_URL+selectVehicle();
         selectVehicle();
@@ -26,10 +29,17 @@ public class Principal {
 
         selectVehicleBrand();
         jsonData = apiService.getData(ADRESS);
-        var modelData = converter.getData(jsonData, VehicleModelData.class);
-        printList(modelData.models(), Comparator.comparing(d -> Long.parseLong(d.code())));
+        var brandData = converter.getData(jsonData, BrandData.class);
+        printList(brandData.models(), Comparator.comparing(d -> Long.parseLong(d.code())));
 
-        searchVehiclesByName(modelData.models());
+        searchVehiclesByName(brandData.models());
+
+        selectVehicleModel();
+        jsonData = apiService.getData(ADRESS);
+        var modelData = converter.getList(jsonData, Data.class);
+        System.out.println(modelData);
+
+        printModelByValue(modelData);
 
     }
 
@@ -59,7 +69,23 @@ public class Principal {
         int code = Integer.parseInt(sc.nextLine());
         ADRESS +="/"+code+"/modelos";
     }
-    
+
+    public void selectVehicleModel(){
+        System.out.println("Informe código do modelo para consultar os valores: ");
+        int code = Integer.parseInt(sc.nextLine());
+        ADRESS+="/"+code+"/anos";
+    }
+
+    private void printModelByValue(List<Data> data){
+        for(Data d : data){
+            String adress = ADRESS + "/"+d.code();
+            String jsonData = apiService.getData(adress);
+            System.out.println("json url: "+jsonData);
+            var vehicleData = converter.getData(jsonData, VehicleData.class);
+            System.out.println("url iteracao: "+vehicleData);
+            vehicles.add(new Vehicle(vehicleData));
+        }
+    }
 
     public <T> void printList(List<T> list, Comparator<T> comparator){
         list.sort(comparator);
